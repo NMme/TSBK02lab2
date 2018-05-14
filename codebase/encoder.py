@@ -7,6 +7,7 @@ fs, data = wavfile.read('../samples/heyhey01.wav')
 data = np.ravel(data)
 data = data[1::2]
 
+'''
 # remove frequencies larger than sample-frequencies
 spectrum = np.fft.fft(data)
 spectrum = spectrum[:len(spectrum)/2]
@@ -62,3 +63,5 @@ plt.plot(u2)
 plt.figure(3)
 plt.plot(output)
 plt.show()
+'''
+
