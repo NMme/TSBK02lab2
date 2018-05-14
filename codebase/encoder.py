@@ -1,6 +1,7 @@
 # This is a python script for encoding audio-signals
 import numpy as np
 from scipy.io import wavfile
+import matplotlib.pyplot as plt
 
 fs, data = wavfile.read('../samples/heyhey01.wav')
 data = np.ravel(data)
@@ -8,11 +9,13 @@ data = data[1::2]
 
 # remove frequencies larger than sample-frequencies
 spectrum = np.fft.fft(data)
-spectrum = spectrum[:44100]
+spectrum = spectrum[:len(spectrum)/2]
 s1 = spectrum[:5512] 
 s2 = spectrum[5512:11025] 
 s3 = spectrum[11025:22050]
 s4 = spectrum[22050:]
+plt.figure(1)
+plt.plot(s2)
 
 # signals
 y1 = np.fft.ifft(s1)
@@ -42,6 +45,7 @@ u3 = np.fft.fft(w3)
 u4 = np.fft.fft(w4)
 
 re_spectrum = np.concatenate([u1, u2, u3, u4], axis=0)
+re_spectrum = np.concatenate([re_spectrum, re_spectrum[::-1]], axis=0)
 output = np.fft.ifft(re_spectrum)
 
 
@@ -53,9 +57,8 @@ high_pass= [0.002898163, -0.009972252, -0.001920936, 0.03596853, -0.01611869,  -
 ll_data = np.convolve( data, low_pass)
 
 
-import matplotlib.pyplot as plt
-plt.figure(1)
-plt.plot(data)
 plt.figure(2)
+plt.plot(u2)
+plt.figure(3)
 plt.plot(output)
 plt.show()
