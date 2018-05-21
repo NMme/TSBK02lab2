@@ -6,12 +6,13 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 # Parameters
-path = '../samples/heyhey01.wav'
+path = '../samples/heyhey.wav'
 bl_size = 512 
 
 # read wavefile
 fs, data = wavfile.read(path)
 data = np.ravel(data)
+data = data[1::2]
 
 # divide data in blocks
 l_over = len(data)%bl_size
@@ -42,7 +43,7 @@ import math
 r_coeff = np.zeros(bl_size)
 nenner = np.prod( np.power(var_coeff, 1.0/bl_size))
 for i in range(0, len(var_coeff)):
-	r_coeff[i] = round(4.3 + 0.5*math.log(var_coeff[i]/nenner ,2))
+	r_coeff[i] = round(6 + 0.5*math.log(var_coeff[i]/nenner ,2))
 
 # find wertebereich
 minmax_coeff = np.zeros((bl_size, 2))
@@ -54,11 +55,16 @@ quan_table = np.zeros(bl_size)
 for i in range(0,bl_size):
 	quan_table[i] = round( (minmax_coeff[i][1] - minmax_coeff[i][0])/(2.0**r_coeff[i]) )
 
+print quan_table
+print r_coeff 
+print np.mean(r_coeff)
+
 # quantize according to the statistics
 for i in range(0,len(blocks)):
 	for j in range(0, bl_size):
 		blocks[i][j] = blocks[i][j] / quan_table[j]
 	blocks[i] = blocks[i].astype(int)
+	#print blocks[i]
 
 # decoding for testing
 for i in range(0,len(blocks)):
