@@ -68,6 +68,25 @@ for i in range(0,len(blocks)):
 	blocks[i] = blocks[i].astype(int)
 	#print blocks[i]
 
-# create file from this
-output_path = "coded_file.NM"
-output = open(output_path, "w")
+# calculate bitrate with huffman coding
+hist, bin_edges = np.histogram( np.ravel(blocks), bins=np.arange(np.amin(blocks),np.amax(blocks), 1), density=True)
+hist = hist*np.diff(bin_edges)
+print bin_edges
+import source_coding
+r = source_coding.huffmanrate(hist)
+print "rate: ", r
+
+# -------------------------------------------
+
+# decoding 
+for i in range(0,len(blocks)):
+	for j in range(0, bl_size):
+		blocks[i][j] = blocks[i][j] * quan_table[j]
+	blocks[i] = fftpack.idct(blocks[i], norm='ortho')
+	blocks[i] = blocks[i].astype(int)
+
+blocks = np.ravel(blocks)
+
+msqer = ((data - blocks) ** 2).mean()
+print ("SNR: ", 10*math.log10(np.var(data)/msqer))
+
