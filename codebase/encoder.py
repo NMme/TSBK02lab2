@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 # Parameters
 path = '../samples/heyhey.wav'
-bl_size = 4096
+bl_size = 8192 
 
 # read wavefile
 fs, data = wavfile.read(path)
@@ -45,7 +45,7 @@ import math
 r_coeff = np.zeros(bl_size)
 nenner = np.prod( np.power(var_coeff, 1.0/bl_size))
 for i in range(0, len(var_coeff)):
-	r_coeff[i] = round(4.3 + 0.5*math.log(var_coeff[i]/nenner ,2))
+	r_coeff[i] = round(7 + 0.5*math.log(var_coeff[i]/nenner ,2))
 
 # find wertebereich
 minmax_coeff = np.zeros((bl_size, 2))
@@ -68,13 +68,25 @@ for i in range(0,len(blocks)):
 	blocks[i] = blocks[i].astype(int)
 	#print blocks[i]
 
+# some statistics for sourcecoding
+#print (float)(len(np.ravel(blocks)) - np.count_nonzero(np.ravel(blocks))) / len(np.ravel(blocks))
+
+import source_coding
+
 # calculate bitrate with huffman coding
 hist, bin_edges = np.histogram( np.ravel(blocks), bins=np.arange(np.amin(blocks),np.amax(blocks), 1), density=True)
 hist = hist*np.diff(bin_edges)
 print bin_edges
-import source_coding
-r = source_coding.huffmanrate(hist)
-print "rate: ", r
+rh = source_coding.huffmanrate(hist)
+print "rate huffman: ", rh
+
+
+# calculate bitrate using runlength coding
+#rr = source_coding.runlengthrate(np.ravel(blocks))
+#print len(rr)
+#print len(np.ravel(blocks))
+rj = source_coding.jpgrate(blocks)
+print "rate jpg: ", rj 
 
 # -------------------------------------------
 
@@ -90,3 +102,7 @@ blocks = np.ravel(blocks)
 msqer = ((data - blocks) ** 2).mean()
 print ("SNR: ", 10*math.log10(np.var(data)/msqer))
 
+out_l = blocks[1::2]
+out_r = blocks[0::2]
+out = [[b[i], b[i+1]] for i in range(0,len(blocks)/2)]
+wavfile.write("out.wav", fs, out)
