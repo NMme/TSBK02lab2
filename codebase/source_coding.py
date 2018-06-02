@@ -31,7 +31,7 @@ def jpgrate(B):
 	bpr = 15
 	bits = 0
 	
-	# start with DC component
+	# DC components 
 	dc_comp = [b[0] for b in B]	
 	dc_diff = np.ediff1d(dc_comp)
 	dc_size = []
@@ -48,37 +48,38 @@ def jpgrate(B):
 		elif abs(c) <= 511: dc_size.append(9)
 		elif abs(c) <= 1023: dc_size.append(10)
 		
-	# create huffman code for size
+	# estimate rate for huffmancoding the size
 	unique, counts = np.unique(dc_size, return_counts=True)
 	dc_p= counts.astype(float)/len(dc_size)
 	bits += huffmanrate(dc_p)*len(dc_size)
-	bits += np.sum(dc_size)
-	
-	print "DC-comp rate: ", bits.astype(float)/len(dc_size)
+	bits += np.sum(dc_size)		# num of bits for amplitude
 	
 	# AC component
 	comp = []	
 	for b in B:
-		indx = np.flatnonzero(b[1:])
-		indx_diff = np.ediff1d(indx)
+		indx = np.flatnonzero(b[1:]) # find nonzero components
+		indx_diff = np.ediff1d(indx) # find run lengths
+		# create new alphabet
 		for i in range(0,len(indx_diff)):
 			if indx_diff[i] == 1: comp.append([0, (int)(math.log(abs(b[indx[i]+1]), 2) +1)])
 			elif indx_diff[i] <= bpr+1: comp.append([indx_diff[i]-1, (int)(math.log(abs(b[indx[i]+1]), 2)+1)])
 			elif indx_diff[i] > bpr+1:
 				for k in range(1, (int)(indx_diff[i]-1)/bpr):
-					comp.append([bpr, 0])
+					comp.append([bpr, 0]) # ZRL
 				comp.append([(indx_diff[i]-1)%bpr, (int)(math.log(abs(b[indx[i]+1]), 2)+1)])
 		if len(indx) == 0:
-			comp.append([0,0])
+			comp.append([0,0]) # EOB
 		elif indx[-1] != len(b)-2:
-			comp.append([0, 0])
+			comp.append([0, 0]) # EOB
 		
 	# huffman coderate for pairs
 	comp_num = [c[0]*(bpr+1)+c[1] for c in comp]
 	unique, counts = np.unique(comp_num, return_counts=True)
 	comp_p = counts.astype(float)/len(comp_num)
 	bits += huffmanrate(comp_p)*len(comp_num)
-	bits += np.sum([c[1] for c in comp])
+	bits += np.sum([c[1] for c in comp]) # size=number of bits needed to code amplitude
+	
+	# calculate final code rate (without side information)
 	rate = bits.astype(float)/np.size(B)
 	
 	return rate

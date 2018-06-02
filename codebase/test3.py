@@ -16,4 +16,4 @@ data = np.ravel(data)
 data = data[1::2]
 
 spectrum = mdct.mdct(data)
-print spectrum
+print len(spectrum[0])
