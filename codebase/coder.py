@@ -8,9 +8,9 @@ from scipy import stats
 import math
 
 # Parameters
-path = '../samples/nuit.wav'
-bl_size = 2048	
-avg_q = 5.4
+path = '../samples/heyhey.wav'
+bl_size = 512
+avg_q = 66
 
 # read wavefile
 fs, data = wavfile.read(path)
